@@ -662,11 +662,13 @@ function renderPhrases() {
 function startBuild() {
   document.getElementById('adjGrid').style.display = 'none';
   document.getElementById('phraseDisplay').style.display = 'none';
-  document.getElementById('langSelector').style.display = 'none';
+  document.getElementById('langSelector').style.display = 'flex';
   document.getElementById('buildContainer').style.display = 'block';
 
-  const langs = ['es', 'zh', 'fr'];
-  buildState.lang = langs[Math.floor(Math.random() * langs.length)];
+  // Use selected language, default to Spanish if English is selected
+  const activeLang = document.querySelector('.lang-btn.active');
+  const selectedLang = activeLang ? activeLang.dataset.lang : 'es';
+  buildState.lang = (selectedLang === 'en') ? 'es' : selectedLang;
   buildState.score = 0;
   buildState.total = 0;
 
@@ -692,9 +694,9 @@ function nextBuildQuestion() {
       allPhrases = [...(PHRASES[currentTopic]?.items || [])];
     }
     buildState.queue = allPhrases.sort(() => Math.random() - 0.5);
-    const langs = ['es', 'zh', 'fr'];
-    const nextIdx = (langs.indexOf(buildState.lang) + 1) % langs.length;
-    buildState.lang = langs[nextIdx];
+    const activeLang = document.querySelector('.lang-btn.active');
+    const selectedLang = activeLang ? activeLang.dataset.lang : 'es';
+    buildState.lang = (selectedLang === 'en') ? 'es' : selectedLang;
   }
 
   const phrase = buildState.queue.pop();
@@ -921,6 +923,11 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
     activeLangs[lang] = !activeLangs[lang];
     btn.classList.toggle('active', activeLangs[lang]);
     render();
+    // Restart build mode with new language if active
+    if (currentMode === 'build' && document.getElementById('buildContainer').style.display === 'block') {
+      buildState.lang = (lang === 'en') ? 'es' : lang;
+      startBuild();
+    }
   });
 });
 
